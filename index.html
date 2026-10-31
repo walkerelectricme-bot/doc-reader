@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Doc Reader</title>
+<meta name="theme-color" content="#1f3a5f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Doc Reader">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header id="bar">
+  <button type="button" id="backBtn" class="icon" aria-label="Back to library" hidden>&#x2039;</button>
+  <h1 id="barTitle">Doc Reader</h1>
+  <button type="button" id="moreBtn" class="icon" aria-label="Settings">&#x22EF;</button>
+</header>
+
+<div id="banner" hidden></div>
+
+<main>
+  <!-- first run: paste your personal link -->
+  <section id="setup" hidden>
+    <h2>Welcome</h2>
+    <p>Paste your personal Doc Reader link to connect this phone to your Google Docs.</p>
+    <label class="field"><span>Your link</span>
+      <input id="keyInput" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…/doc-reader/?k=…"></label>
+    <button type="button" id="keyBtn" class="btn primary wide">Connect</button>
+    <p id="setupMsg" class="msg" role="status"></p>
+    <p class="hint">Installed the app on an iPhone home screen? It keeps its own storage, so paste the link here once.</p>
+  </section>
+
+  <!-- library -->
+  <section id="library" hidden>
+    <div id="resume" hidden></div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="saved" class="tab">On phone</button>
+      <button type="button" role="tab" data-tab="recent" class="tab">Recent</button>
+      <button type="button" role="tab" data-tab="starred" class="tab">Starred</button>
+    </div>
+    <form id="searchForm" class="row" autocomplete="off">
+      <input id="searchInput" type="search" placeholder="Search your Docs" enterkeyhint="search" aria-label="Search your Docs">
+      <button type="submit" class="btn">Search</button>
+    </form>
+    <p id="libMsg" class="msg" role="status"></p>
+    <ul id="docList" class="docs"></ul>
+    <form id="pasteForm" class="paste" autocomplete="off">
+      <label class="field"><span>Or paste a Google Docs link</span>
+        <input id="pasteInput" type="url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://docs.google.com/document/d/…"></label>
+      <button type="submit" class="btn wide">Open this Doc</button>
+    </form>
+  </section>
+
+  <!-- reader -->
+  <section id="reader" hidden>
+    <article id="text" aria-live="off"></article>
+  </section>
+</main>
+
+<footer id="player" hidden>
+  <div id="progress"><div id="progressFill"></div></div>
+  <div id="status" class="status">Ready</div>
+  <div class="controls">
+    <button type="button" class="ctl" id="prevPara" aria-label="Back one paragraph"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="currentColor"><path d="M6 5h2.2v14H6zM20 5.5v13L9.5 12z"/></svg></button>
+    <button type="button" class="ctl" id="prevSent" aria-label="Back one sentence"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="currentColor"><path d="M15.4 4.6 8 12l7.4 7.4-1.8 1.8L4.4 12l9.2-9.2z"/></svg></button>
+    <button type="button" class="ctl play" id="playBtn" aria-label="Play"><svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" fill="currentColor"><path d="M7 4.5v15l12.5-7.5z"/></svg></button>
+    <button type="button" class="ctl" id="nextSent" aria-label="Forward one sentence"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="currentColor"><path d="M8.6 4.6 16 12l-7.4 7.4 1.8 1.8 9.2-9.2-9.2-9.2z"/></svg></button>
+    <button type="button" class="ctl" id="nextPara" aria-label="Forward one paragraph"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="currentColor"><path d="M15.8 5H18v14h-2.2zM4 5.5v13L14.5 12z"/></svg></button>
+  </div>
+  <div class="controls small">
+    <button type="button" class="pill" id="speedBtn" aria-label="Reading speed">1.0×</button>
+    <button type="button" class="pill" id="voiceBtn" aria-label="Voice and text size">Voice</button>
+    <button type="button" class="pill" id="darkBtn" aria-label="Black screen while listening">Black screen</button>
+  </div>
+</footer>
+
+<!-- settings sheet -->
+<div id="sheet" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-body">
+    <h2 id="sheetTitle">Settings</h2>
+    <label class="field"><span>Speed <b id="rateVal">1.0×</b></span>
+      <input id="rateInput" type="range" min="0.5" max="2" step="0.1" value="1"></label>
+    <label class="field"><span>Voice</span>
+      <select id="voiceSelect"></select></label>
+    <button type="button" id="testVoice" class="btn wide">Test this voice</button>
+    <label class="field"><span>Text size <b id="sizeVal">100%</b></span>
+      <input id="sizeInput" type="range" min="80" max="160" step="10" value="100"></label>
+    <div id="docActions">
+      <button type="button" id="refreshDoc" class="btn wide">Download the latest version of this Doc</button>
+      <button type="button" id="removeDoc" class="btn wide quiet">Remove this Doc from the phone</button>
+    </div>
+    <p class="hint" id="aboutLine"></p>
+    <p class="hint">Reading stops if the screen turns off or you switch apps; the app keeps the screen on while it reads.
+      Use <b>Black screen</b> to save battery while you listen.</p>
+    <button type="button" id="forgetKey" class="btn wide quiet">Disconnect this phone</button>
+    <button type="button" id="sheetClose" class="btn primary wide">Done</button>
+  </div>
+</div>
+
+<div id="black" hidden><p>Reading… Double-tap to light up the screen.</p></div>
+<div id="toast" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script src="js/text.js"></script>
+<script src="js/speaker.js"></script>
+<script src="js/store.js"></script>
+<script src="js/remote.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
